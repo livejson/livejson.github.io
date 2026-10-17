@@ -469,8 +469,8 @@ main { position: relative; z-index: 1; }
 
 .avatar {
   position: relative;
-  width: 170px;
-  height: 170px;
+  width: 200px;
+  height: 200px;
   margin: 0 auto;
 }
 .avatar__ring {
@@ -481,30 +481,23 @@ main { position: relative; z-index: 1; }
   animation: spin 6s linear infinite;
   filter: blur(0.3px);
 }
+/* Der Innenabstand ist der dunkle Spalt zwischen Foto und Regenbogen-Ring */
 .avatar__core {
   position: absolute;
   inset: 0;
   border-radius: 50%;
+  padding: 7px;
   background: #0d0b18;
-  display: grid;
-  place-items: center;
-  font-size: 3.4rem;
-  font-weight: 700;
-  background-image: var(--grad);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradShift 6s ease infinite;
-  box-shadow: inset 0 0 0 6px #0d0b18;
 }
-.avatar__core::before {
-  content: "";
-  position: absolute;
-  inset: 6px;
+
+.avatar__img {
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  background: #0d0b18;
-  z-index: -1;
+  object-fit: cover;
+  object-position: center top;
+  background: var(--bg-2);
 }
 
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1.4rem; }
