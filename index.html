@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LiveJSON · Streamer & Community</title>
+  <meta name="description" content="Jason alias LiveJSON – Streamer, Creator und Community. Alle Infos, Streams, Socials und der Discord an einem Ort." />
+  <meta name="theme-color" content="#07060d" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Intro-Loader -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader__inner">
+      <div class="loader__mark">LJ</div>
+      <div class="loader__bar"><span></span></div>
+      <p class="loader__text">lade Community…</p>
+    </div>
+  </div>
+
+  <!-- Hintergrund-Effekte -->
+  <canvas id="particles" class="particles" aria-hidden="true"></canvas>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <!-- Navigation -->
+  <header class="nav" id="nav">
+    <a href="#top" class="nav__logo" aria-label="Zum Anfang">
+      <span class="nav__logo-mark">LJ</span>
+      <span>LIVE<b>JSON</b></span>
+    </a>
+    <nav class="nav__links" aria-label="Hauptnavigation">
+      <a href="#about">Über mich</a>
+      <a href="#socials">Socials</a>
+      <a href="#story">Story</a>
+      <a href="#schedule">Streamplan</a>
+      <a href="#community">Community</a>
+    </nav>
+    <a class="btn btn--small btn--glow" href="#" data-magnetic>Live schauen</a>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__blob hero__blob--a" aria-hidden="true"></div>
+      <div class="hero__blob hero__blob--b" aria-hidden="true"></div>
+
+      <div class="hero__content">
+        <div class="status-badge reveal" data-delay="0">
+          <span class="status-badge__dot" id="liveDot"></span>
+          <span id="liveText">Gerade offline – bis bald!</span>
+        </div>
+
+        <h1 class="hero__title glitch" data-text="LIVEJSON">
+          <span class="hero__title-inner">LIVEJSON</span>
+        </h1>
+
+        <p class="hero__sub reveal" data-delay="200">
+          Hi, ich bin <strong>Jason</strong> – überall bekannt als <strong class="accent">LiveJSON</strong>.
+        </p>
+        <p class="hero__typed reveal" data-delay="300">
+          <span class="hero__typed-prefix">Heute mit mir:</span>
+          <span id="typed" class="hero__typed-text"></span><span class="caret">|</span>
+        </p>
+
+        <div class="hero__actions reveal" data-delay="400">
+          <a class="btn btn--primary" href="#" data-magnetic>
+            <span>Zum Twitch-Kanal</span>
+            <span class="btn__arrow">→</span>
+          </a>
+          <a class="btn btn--ghost" href="#" data-magnetic>
+            <span>Discord beitreten</span>
+          </a>
+        </div>
+      </div>
+
+      <a href="#marquee" class="scroll-hint" aria-label="Weiter scrollen">
+        <span class="scroll-hint__mouse"><span></span></span>
+      </a>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee" id="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>STREAMS</span><i>✦</i><span>COMMUNITY</span><i>✦</i><span>GAMING</span><i>✦</i><span>CHILL</span><i>✦</i><span>LIVEJSON</span><i>✦</i>
+        <span>STREAMS</span><i>✦</i><span>COMMUNITY</span><i>✦</i><span>GAMING</span><i>✦</i><span>CHILL</span><i>✦</i><span>LIVEJSON</span><i>✦</i>
+      </div>
+    </div>
+
+    <!-- ÜBER MICH -->
+    <section class="section" id="about">
+      <div class="section__head reveal">
+        <span class="eyebrow">01 · Über mich</span>
+        <h2>Wer steckt hinter <span class="accent">LiveJSON</span>?</h2>
+      </div>
+
+      <div class="about">
+        <article class="card tilt reveal" data-delay="100">
+          <div class="avatar">
+            <div class="avatar__ring"></div>
+            <div class="avatar__core">LJ</div>
+          </div>
+          <h3>Jason</h3>
+          <p class="muted">aka LiveJSON · Streamer · Creator</p>
+          <div class="chips">
+            <span class="chip">Gaming</span>
+            <span class="chip">Just Chatting</span>
+            <span class="chip">Community</span>
+          </div>
+        </article>
+
+        <div class="about__text reveal" data-delay="200">
+          <p>
+            Ich streame, weil ich Bock drauf habe, mit Leuten zu zocken, zu quatschen
+            und einfach eine gute Zeit zu haben. Aus einem kleinen Kanal ist mit der Zeit
+            eine richtig geile Community geworden – und genau dafür ist diese Seite:
+            alles Wichtige über mich, meine Streams und wie du mitmachen kannst.
+          </p>
+          <p>
+            Hier findest du meine Socials, den Streamplan, meine Story und den Discord,
+            in dem wir uns täglich über den Weg laufen.
+          </p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat reveal" data-delay="0">
+          <span class="stat__num" data-count="3">0</span><span class="stat__suffix">+</span>
+          <span class="stat__label">Jahre Streaming</span>
+        </div>
+        <div class="stat reveal" data-delay="100">
+          <span class="stat__num" data-count="1500">0</span><span class="stat__suffix">+</span>
+          <span class="stat__label">Community-Mitglieder</span>
+        </div>
+        <div class="stat reveal" data-delay="200">
+          <span class="stat__num" data-count="400">0</span><span class="stat__suffix">+</span>
+          <span class="stat__label">Livestreams</span>
+        </div>
+        <div class="stat reveal" data-delay="300">
+          <span class="stat__num" data-count="1200">0</span><span class="stat__suffix">h</span>
+          <span class="stat__label">Stunden Content</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOCIALS -->
+    <section class="section" id="socials">
+      <div class="section__head reveal">
+        <span class="eyebrow">02 · Socials</span>
+        <h2>Folg mir <span class="accent">überall</span></h2>
+      </div>
+
+      <div class="socials">
+        <a class="social reveal tilt-soft" href="#" data-delay="0" style="--c:#9146ff">
+          <span class="social__icon">TV</span>
+          <span class="social__name">Twitch</span>
+          <span class="social__hint">Livestreams & VODs</span>
+          <span class="social__arrow">↗</span>
+        </a>
+        <a class="social reveal tilt-soft" href="#" data-delay="80" style="--c:#ff0033">
+          <span class="social__icon">YT</span>
+          <span class="social__name">YouTube</span>
+          <span class="social__hint">Videos & Highlights</span>
+          <span class="social__arrow">↗</span>
+        </a>
+        <a class="social reveal tilt-soft" href="#" data-delay="160" style="--c:#5865f2">
+          <span class="social__icon">DC</span>
+          <span class="social__name">Discord</span>
+          <span class="social__hint">Die Community</span>
+          <span class="social__arrow">↗</span>
+        </a>
+        <a class="social reveal tilt-soft" href="#" data-delay="240" style="--c:#e1306c">
+          <span class="social__icon">IG</span>
+          <span class="social__name">Instagram</span>
+          <span class="social__hint">Behind the Scenes</span>
+          <span class="social__arrow">↗</span>
+        </a>
+        <a class="social reveal tilt-soft" href="#" data-delay="320" style="--c:#22d3ee">
+          <span class="social__icon">TT</span>
+          <span class="social__name">TikTok</span>
+          <span class="social__hint">Kurze Clips & Memes</span>
+          <span class="social__arrow">↗</span>
+        </a>
+        <a class="social reveal tilt-soft" href="#" data-delay="400" style="--c:#f5f5f5">
+          <span class="social__icon">X</span>
+          <span class="social__name">X / Twitter</span>
+          <span class="social__hint">News & Updates</span>
+          <span class="social__arrow">↗</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- STORY -->
+    <section class="section" id="story">
+      <div class="section__head reveal">
+        <span class="eyebrow">03 · Meine Story</span>
+        <h2>Der Weg bis <span class="accent">hierher</span></h2>
+      </div>
+
+      <ol class="timeline" id="timeline">
+        <li class="timeline__item reveal" data-delay="0">
+          <span class="timeline__year">Start</span>
+          <h3>Die ersten Streams</h3>
+          <p>Ein Mikrofon, ein bisschen Mut und viel Lust, einfach zu zocken. Die ersten Zuschauer waren Freunde – und das war genau richtig.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="100">
+          <span class="timeline__year">Wachstum</span>
+          <h3>Die Community wächst</h3>
+          <p>Aus Zuschauern wurden Stammgäste, aus Stammgästen wurde eine Familie. Community-Events, Chats voller Inside-Jokes und der erste Discord.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="200">
+          <span class="timeline__year">Heute</span>
+          <h3>Mehr als nur ein Kanal</h3>
+          <p>Streams, Videos, Clips und eine Community, die zusammenhält. Ich mache weiter, weil ihr dabei seid.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- SCHEDULE -->
+    <section class="section" id="schedule">
+      <div class="section__head reveal">
+        <span class="eyebrow">04 · Streamplan</span>
+        <h2>Wann <span class="accent">streame</span> ich?</h2>
+        <p class="muted">Die Zeiten sind Platzhalter – trag hier deinen echten Plan ein.</p>
+      </div>
+
+      <div class="schedule">
+        <div class="day reveal" data-day="1" data-delay="0"><span class="day__name">Mo</span><span class="day__time">20:00</span><span class="day__game">Gaming</span></div>
+        <div class="day reveal" data-day="2" data-delay="60"><span class="day__name">Di</span><span class="day__time">—</span><span class="day__game">Frei</span></div>
+        <div class="day reveal" data-day="3" data-delay="120"><span class="day__name">Mi</span><span class="day__time">20:00</span><span class="day__game">Just Chatting</span></div>
+        <div class="day reveal" data-day="4" data-delay="180"><span class="day__name">Do</span><span class="day__time">20:00</span><span class="day__game">Gaming</span></div>
+        <div class="day reveal" data-day="5" data-delay="240"><span class="day__name">Fr</span><span class="day__time">21:00</span><span class="day__game">Community-Night</span></div>
+        <div class="day reveal" data-day="6" data-delay="300"><span class="day__name">Sa</span><span class="day__time">18:00</span><span class="day__game">Marathon</span></div>
+        <div class="day reveal" data-day="0" data-delay="360"><span class="day__name">So</span><span class="day__time">—</span><span class="day__game">Pause</span></div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section class="section" id="community">
+      <div class="section__head reveal">
+        <span class="eyebrow">05 · Community</span>
+        <h2>Du gehörst <span class="accent">dazu</span></h2>
+      </div>
+
+      <div class="community">
+        <div class="community__card reveal" data-delay="0">
+          <h3>Discord</h3>
+          <p>Der Ort für alles: Stream-Benachrichtigungen, Fragen, Memes, Events und Leute, die genauso ticken wie du.</p>
+          <a class="btn btn--primary" href="#" data-magnetic><span>Jetzt beitreten</span><span class="btn__arrow">→</span></a>
+        </div>
+
+        <div class="community__card reveal" data-delay="120">
+          <h3>Regeln für alle</h3>
+          <ul class="rules">
+            <li><span>01</span> Respekt vor jedem – immer.</li>
+            <li><span>02</span> Kein Hate, kein Spam, keine Doxxing.</li>
+            <li><span>03</span> Gute Stimmung ist Pflicht.</li>
+            <li><span>04</span> Spaß haben – das ist der Plan.</li>
+          </ul>
+        </div>
+
+        <div class="community__card community__card--wide reveal" data-delay="240">
+          <h3>Community-Zahlen</h3>
+          <p class="muted">Ihr seid der Grund, warum ich weitermache. Danke!</p>
+          <div class="pulse-bar"><span data-width="78"></span></div>
+          <p class="pulse-label">78 % der Community sind bei jedem Stream dabei</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETUP -->
+    <section class="section" id="setup">
+      <div class="section__head reveal">
+        <span class="eyebrow">06 · Setup</span>
+        <h2>Womit <span class="accent">zocke</span> ich?</h2>
+      </div>
+      <div class="setup">
+        <div class="setup__item reveal" data-delay="0"><span>PC</span><b>Gaming-Rig</b></div>
+        <div class="setup__item reveal" data-delay="80"><span>MIC</span><b>Mikrofon</b></div>
+        <div class="setup__item reveal" data-delay="160"><span>CAM</span><b>Webcam</b></div>
+        <div class="setup__item reveal" data-delay="240"><span>KB</span><b>Tastatur & Maus</b></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__big">LIVEJSON</div>
+    <p>© <span id="year"></span> Jason · aka LiveJSON · Made with ♥ für die Community</p>
+    <a href="#top" class="footer__top">Nach oben ↑</a>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
