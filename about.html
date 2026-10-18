@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="de" class="no-js">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Über mich · livejson</title>
+  <meta name="description" content="Wer ist livejson? Jason, Streamer aus Leidenschaft: erster Stream 05.09.2021, 35 Streams, 117 Stunden Content." />
+  <meta name="theme-color" content="#05030a" />
+  <meta name="color-scheme" content="dark" />
+
+  <link rel="canonical" href="https://livejson.github.io/about.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="livejson" />
+  <meta property="og:title" content="Über mich · livejson" />
+  <meta property="og:description" content="Wer ist livejson? Jason, Streamer aus Leidenschaft: erster Stream 05.09.2021, 35 Streams, 117 Stunden Content." />
+  <meta property="og:url" content="https://livejson.github.io/about.html" />
+  <meta property="og:image" content="https://livejson.github.io/assets/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="de_DE" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Über mich · livejson" />
+  <meta name="twitter:description" content="Wer ist livejson? Jason, Streamer aus Leidenschaft: erster Stream 05.09.2021, 35 Streams, 117 Stunden Content." />
+  <meta name="twitter:image" content="https://livejson.github.io/assets/og.jpg" />
+
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="assets/favicon-64.png" sizes="64x64" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+  <link rel="shortcut icon" href="favicon.ico" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- ?v= steigt bei jeder Änderung mit, damit der Browser nichts Altes aus dem Cache zeigt -->
+  <link rel="stylesheet" href="styles.css?v=v7" />
+  <link rel="stylesheet" href="pages.css?v=v7" />
+
+  <!-- Sicherheitsnetz: Inhalte werden auch sichtbar, wenn main.js gar nicht lädt -->
+  <script>
+    document.documentElement.className = "js";
+    setTimeout(function () {
+      var loader = document.getElementById("loader");
+      if (loader) loader.classList.add("is-done");
+    }, 4000);
+    setTimeout(function () {
+      document.documentElement.classList.add("reveal-fallback");
+    }, 3500);
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <div class="loader" id="loader" role="status" aria-live="polite">
+    <div class="loader__inner">
+      <div class="loader__mark">LJ</div>
+      <div class="loader__bar"><span></span></div>
+      <p class="loader__text">lade livejson…</p>
+    </div>
+  </div>
+
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <canvas id="particles" class="particles" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor__dot"></span>
+    <span class="cursor__ring"></span>
+  </div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <a href="index.html" class="nav__logo" aria-label="Startseite">
+      <span class="nav__logo-mark">LJ</span>
+      <span class="nav__logo-text">live<b>json</b></span>
+    </a>
+
+    <nav class="nav__links" aria-label="Hauptnavigation">
+      <a href="about.html" data-nav class="is-active" aria-current="page">Über mich</a>
+      <a href="clips.html" data-nav>Clips</a>
+      <a href="socials.html" data-nav>Socials</a>
+      <a href="streamplan.html" data-nav>Streamplan</a>
+      <a href="community.html" data-nav>Community</a>
+      <span class="nav__indicator" aria-hidden="true"></span>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="kbd-btn" id="paletteOpen" type="button" aria-label="Befehlspalette öffnen">
+        <span class="kbd-btn__icon" aria-hidden="true">⌘</span><span class="kbd-btn__label">Springen</span><kbd>K</kbd>
+      </button>
+      <a class="livepill is-offline" data-live-pill href="https://twitch.tv/livejson" target="_blank" rel="noopener">
+        <span class="livepill__dot" aria-hidden="true"></span>
+        <span data-live-pill-text>Offline</span>
+      </a>
+      <a class="btn btn--small btn--primary" href="https://twitch.tv/livejson" target="_blank" rel="noopener" data-twitch-link data-magnetic>
+        <span class="btn__dot"></span> Live schauen
+      </a>
+      <button class="burger" id="navToggle" type="button" aria-expanded="false" aria-controls="navPanel" aria-label="Menü öffnen">
+        <span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="menu" id="navPanel" hidden>
+    <nav class="menu__inner" aria-label="Mobile Navigation">
+      <a href="index.html"><span>00</span> Start</a>
+      <a href="about.html" class="is-active" aria-current="page"><span>01</span> Über mich ·</a>
+      <a href="clips.html"><span>02</span> Clips</a>
+      <a href="socials.html"><span>03</span> Socials</a>
+      <a href="streamplan.html"><span>04</span> Streamplan</a>
+      <a href="community.html"><span>05</span> Community</a>
+    </nav>
+    <p class="menu__foot">© <span data-year></span> · livejson</p>
+  </div>
+
+  <nav class="rail" id="rail" aria-label="Seitennavigation">
+    <a href="index.html" data-rail><i>Start</i><span>00</span></a>
+    <a href="about.html" data-rail class="is-active" aria-current="page"><i>Über mich</i><span>01</span></a>
+    <a href="clips.html" data-rail><i>Clips</i><span>02</span></a>
+    <a href="socials.html" data-rail><i>Socials</i><span>03</span></a>
+    <a href="streamplan.html" data-rail><i>Streamplan</i><span>04</span></a>
+    <a href="community.html" data-rail><i>Community</i><span>05</span></a>
+  </nav>
+
+  <main id="main">
+
+    <section class="page-hero">
+      <div class="hero__glow hero__glow--a" aria-hidden="true"></div>
+      <nav class="page-hero__crumbs" aria-label="Brotkrumen">
+        <a href="index.html">Start</a> <span>/</span> Über mich
+      </nav>
+      <span class="eyebrow"><i>01</i> Über mich</span>
+      <h1>Wer steckt hinter <span class="serif accent">livejson</span>?</h1>
+      <p class="page-hero__lead">
+        Jason, Baujahr GTA-RP, Motorrad- und Auto-Nerd, leidenschaftlicher Gamer.
+        Seit 31.01.2020 auf Twitch, seit 05.09.2021 regelmäßig live –
+        und seitdem mit einer Community unterwegs, die zusammenhält.
+      </p>
+      <div class="page-hero__stats">
+        <span class="pill pill--live">Follower <b data-followers>847</b></span>
+        <span class="pill">Streams <b>35</b></span>
+        <span class="pill">Stunden <b>117</b></span>
+        <span class="pill">Ø Zuschauer <b>11</b></span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="live-strip reveal">
+        <span class="live-strip__item"><span class="livepill__dot" data-live-dot aria-hidden="true"></span> <b data-hud-status>Offline</b></span>
+        <span class="live-strip__item">Kategorie <b data-category>Grade offline</b></span>
+        <span class="live-strip__item">Follower <b data-followers>847</b></span>
+        <span class="live-strip__item">Zuletzt live <b>07.07.2026</b></span>
+      </div>
+      <div class="facts">
+        <div class="fact reveal"><span>Erster Stream</span><b>05.09.2021</b></div>
+        <div class="fact reveal"><span>Zuletzt live</span><b>07.07.2026</b></div>
+        <div class="fact reveal"><span>Auf Twitch seit</span><b>31.01.2020</b></div>
+        <div class="fact reveal"><span>Beste Zuschauerzahl</span><b>60</b></div>
+        <div class="fact reveal"><span>Streams insgesamt</span><b>35</b></div>
+        <div class="fact reveal"><span>Gestreamte Zeit</span><b>117 Stunden</b></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section__head reveal">
+        <span class="eyebrow"><i>02</i> Meine Story</span>
+        <h2>Der Weg bis <span class="serif accent">hierher</span></h2>
+      </div>
+
+      <ol class="timeline" id="timeline">
+        <li class="timeline__item reveal" data-delay="0">
+          <span class="timeline__year">2020</span>
+          <h3>Der Kanal entsteht</h3>
+          <p>Account angelegt, Name gesetzt: livejson. Noch ohne Plan, aber mit Bock auf Games.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="100">
+          <span class="timeline__year">2021</span>
+          <h3>Der erste Stream</h3>
+          <p>Am 05.09.2021 ging es los – FivePD und GTA-RP. Wenige Zuschauer, aber die richtigen.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="200">
+          <span class="timeline__year">Wachstum</span>
+          <h3>Community statt Zuschauer</h3>
+          <p>Aus Zuschauern wurden Stammgäste, aus Stammgästen Freunde. 539 Follower sind bei den Streams dazugekommen.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="300">
+          <span class="timeline__year">2026</span>
+          <h3>Marathon-Sommer</h3>
+          <p>Tag für Tag live, über 12 Stunden am Stück, 60 Leute gleichzeitig im Kanal.</p>
+        </li>
+        <li class="timeline__item reveal" data-delay="400">
+          <span class="timeline__year">Jetzt</span>
+          <h3>Nächster Stream kommt</h3>
+          <p>Zwischen den Streams passiert hier alles: Clips, Socials, Community. Schau im Streamplan, wann es weitergeht.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="section__head reveal">
+        <span class="eyebrow"><i>03</i> Setup</span>
+        <h2>Womit <span class="serif accent">zocke</span> ich?</h2>
+        <p class="muted">Hardware, Tastatur und Maus – schreib mir im Chat, wenn du Details brauchst.</p>
+      </div>
+      <div class="setup">
+        <div class="setup__item reveal"><span>PC</span><b>Gaming-Rig</b></div>
+        <div class="setup__item reveal"><span>MIC</span><b>Mikrofon</b></div>
+        <div class="setup__item reveal"><span>CAM</span><b>Webcam</b></div>
+        <div class="setup__item reveal"><span>KB</span><b>Tastatur &amp; Maus</b></div>
+      </div>
+      <div class="note reveal"><span>Diese vier Kacheln sind Platzhalter – nenn mir deine echten Teile, dann trage ich sie ein.</span></div>
+    </section>
+
+    <section class="section">
+      <div class="stats">
+        <div class="stat stat--live reveal" data-delay="0">
+          <span class="stat__num" data-followers>847</span>
+          <span class="stat__label">Twitch-Follower</span>
+        </div>
+        <div class="stat reveal" data-delay="70">
+          <span class="stat__num" data-count="35">35</span>
+          <span class="stat__label">Livestreams</span>
+        </div>
+        <div class="stat reveal" data-delay="140">
+          <span class="stat__num" data-count="117">117<small>h</small></span>
+          <span class="stat__label">gestreamt</span>
+        </div>
+        <div class="stat reveal" data-delay="210">
+          <span class="stat__num" data-count="11">11</span>
+          <span class="stat__label">Ø Zuschauer</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__big" aria-hidden="true">livejson</div>
+    <p>© <span data-year></span> Jason · aka livejson · Made with ♥ für die Community</p>
+    <p class="footer__hint">Zahlen und Clips kommen direkt von Twitch · Stand <span data-snapshot>18.10.2026</span></p>
+    <a href="#top" class="footer__top">Nach oben ↑</a>
+  </footer>
+
+  <!-- Clip-Player -->
+  <div class="player" id="player" hidden>
+    <div class="player__scrim" data-player-close></div>
+    <div class="player__box" role="dialog" aria-modal="true" aria-label="Twitch-Clip">
+      <button class="player__close" type="button" data-player-close aria-label="Player schließen">×</button>
+      <div class="player__frame" id="playerFrame"></div>
+      <div class="player__foot">
+        <h3 id="playerTitle">Clip</h3>
+        <a class="btn btn--ghost btn--small" id="playerExternal" href="https://twitch.tv/livejson" target="_blank" rel="noopener">Auf Twitch öffnen ↗</a>
+        <p id="playerMeta"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Befehlspalette -->
+  <div class="palette" id="palette" hidden>
+    <div class="palette__scrim" data-palette-close></div>
+    <div class="palette__box" role="dialog" aria-modal="true" aria-labelledby="paletteTitle">
+      <div class="palette__head">
+        <span id="paletteTitle">Springen &amp; suchen</span>
+        <kbd>ESC</kbd>
+      </div>
+      <input
+        class="palette__input"
+        id="paletteInput"
+        type="text"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="paletteList"
+        aria-autocomplete="list"
+        placeholder="Wohin willst du?"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <ul class="palette__list" id="paletteList" role="listbox" aria-label="Ergebnisse"></ul>
+      <p class="palette__hint"><span>↑ ↓</span> wählen <span>↵</span> öffnen</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js?v=v7" defer></script>
+  <script src="main.js?v=v7" defer></script>
+</body>
+</html>

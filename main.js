@@ -12,12 +12,50 @@
   "use strict";
 
   const CONFIG = {
-    isLive: false,
-    liveText: "LIVE JETZT – komm vorbei!",
-    offlineText: "Gerade offline – bis bald!",
     typedWords: ["Gaming-Streams", "Chill-Sessions", "Community-Abende", "Marathon-Nights"],
+
+    // Streamplan – dieselben Zeiten wie auf der Streamplan-Seite.
+    // Eine Quelle für Anzeige und Countdown: ändere sie hier, wenn sich deine Zeiten ändern.
+    plan: [
+      { day: 1, time: "20:00", label: "Gaming" },
+      { day: 3, time: "20:00", label: "Just Chatting" },
+      { day: 4, time: "20:00", label: "Gaming" },
+      { day: 5, time: "21:00", label: "Community-Night" },
+      { day: 6, time: "18:00", label: "Marathon" },
+    ],
     weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
     weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+  };
+
+  /* ---------- Twitch ------------------------------------------------------
+     Echte Daten statt Platzhalter. Zwei Quellen:
+     · data.js  – Zahlen und Clips, die der Build einmal ausgelesen hat.
+     · DecAPI   – Live-Status, Kategorie, Titel und Follower, direkt von Twitch.
+     Fällt die API aus, bleibt der zuletzt bekannte Stand stehen.            */
+
+  const LJ = window.LJ || {};
+  const CHANNEL = {
+    login: (LJ.channel && LJ.channel.login) || "livejson",
+    name: (LJ.channel && LJ.channel.name) || "LiveJson",
+    createdAt: (LJ.channel && LJ.channel.createdAt) || "2020-01-31",
+  };
+  const TWITCH = {
+    page: `https://twitch.tv/${CHANNEL.login}`,
+    api: "https://decapi.me/twitch",
+    ttl: 45000,
+    interval: 60000,
+  };
+
+  const de = (date) => (date ? date.split("-").reverse().join(".") : "—");
+
+  const state = {
+    live: Boolean(LJ.channel && LJ.channel.liveAtBuild),
+    uptime: "",
+    game: "",
+    title: "",
+    viewers: null,
+    followers: Number((LJ.channel && LJ.channel.followersAtBuild) || 0),
+    loaded: false,
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -183,28 +221,238 @@
     document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
   }
 
-  /* ---------- 3. Live-Status -------------------------------------------- */
+  /* ---------- 3. Live-Status (echte Twitch-Daten) ------------------------ */
+
+  /** Holt einen Wert von DecAPI – mit kurzem Cache, damit wir Twitch nicht fluten.
+      Schlägt das Netz fehl, gewinnt der letzte bekannte Wert statt einer Lücke. */
+  async function twitchCall(path) {
+    const key = `lj:${path}`;
+    let cached = null;
+
+    try {
+      cached = JSON.parse(sessionStorage.getItem(key) || "null");
+      if (cached && Date.now() - cached.at < TWITCH.ttl) return cached.value;
+    } catch { /* Speicher voll oder gesperrt – dann eben direkt fragen */ }
+
+    try {
+      const res = await fetch(`${TWITCH.api}/${path}/${CHANNEL.login}?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`DecAPI ${res.status} bei ${path}`);
+      const value = (await res.text()).trim();
+      try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), value })); } catch { /* egal */ }
+      return value;
+    } catch (error) {
+      if (cached && cached.value) return cached.value;
+      throw error;
+    }
+  }
+
+  function setText(sel, value, root = document) {
+    if (value === undefined || value === null || value === "") return;
+    $$(sel, root).forEach((el) => { el.textContent = value; });
+  }
+
+  /** Schreibt den kompletten Live-Zustand in alle Elemente, die daran hängen. */
+  function paintLive() {
+    const live = state.live;
+
+    document.documentElement.classList.toggle("is-live", live);
+
+    $$("[data-live-pill]").forEach((el) => {
+      el.classList.toggle("is-live", live);
+      el.classList.toggle("is-offline", !live);
+      const label = el.querySelector("[data-live-pill-text]");
+      if (label) label.textContent = live ? "Jetzt live" : "Offline";
+      el.setAttribute("title", live ? `Live: ${state.title || state.game || "Stream läuft"}` : `Gerade offline · letzter Stream ${de(LJ.stats && LJ.stats.lastStream)}`);
+    });
+
+    $$(".badge").forEach((badge) => badge.classList.toggle("is-live", live));
+    $$("#liveDot, [data-live-dot]").forEach((dot) => dot.classList.toggle("is-live", live));
+
+    setText("[data-live-text]", live
+      ? (state.title ? `LIVE · ${state.title}` : "LIVE JETZT – komm vorbei!")
+      : "Gerade offline – bis bald!");
+
+    setText("[data-countdown-label]", live ? "Läuft seit" : "Nächster Stream");
+    setText("[data-hud-status]", live ? "LIVE" : "Offline");
+    setText("[data-hud-status-meta]", live
+      ? (state.uptime ? `läuft seit ${state.uptime}` : "Jetzt zuschauen")
+      : `letzter Stream ${de(LJ.stats && LJ.stats.lastStream)}`);
+
+    // „Heute mit mir:“ → echte Kategorie, und wenn nichts läuft: „Grade offline“
+    setText("[data-category]", live && (state.game || state.title) ? (state.game || state.title) : "Grade offline");
+    setText("[data-live-title]", live ? (state.title || "Stream läuft") : "Kein Stream gerade");
+    setText("[data-uptime]", live ? (state.uptime || "live") : "offline");
+    setText("[data-viewers]", state.viewers !== null ? String(state.viewers) : "—");
+
+    $$("[data-twitch-link]").forEach((el) => {
+      el.setAttribute("href", TWITCH.page);
+      if (live) el.setAttribute("data-live-cta", "true");
+      else el.removeAttribute("data-live-cta");
+    });
+
+    const cta = $("[data-hero-cta-label]");
+    if (cta) cta.textContent = live ? "Jetzt live zuschauen" : "Zum Twitch-Kanal";
+
+    paintFollowers();
+  }
+
+  /** Zählt eine Zahl sichtbar von ihrem aktuellen Wert auf den neuen hoch. */
+  function animateNumber(el, to) {
+    const current = Number(String(el.textContent).replace(/[^\d]/g, "")) || 0;
+    if (current === to || reduceMotion.matches) {
+      el.textContent = to.toLocaleString("de-DE");
+      return;
+    }
+
+    const start = performance.now();
+    const duration = 900;
+
+    function step(now) {
+      const p = clamp((now - start) / duration, 0, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(current + (to - current) * eased).toLocaleString("de-DE");
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function paintFollowers() {
+    const followers = Number(state.followers) || 0;
+
+    $$("[data-followers]").forEach((el) => {
+      if (el.dataset.value === String(followers)) return;
+      const first = el.dataset.value === undefined;
+      el.dataset.value = String(followers);
+      if (first) {
+        el.textContent = followers.toLocaleString("de-DE");
+        return;
+      }
+      animateNumber(el, followers);
+    });
+
+    const step = followers < 1000 ? 50 : 100;
+    const goal = Math.max(step, Math.ceil((followers + 1) / step) * step);
+    const from = goal - step;
+    const percent = clamp(((followers - from) / step) * 100, 1, 100);
+
+    $$("[data-follower-fill]").forEach((el) => { el.style.width = `${percent}%`; });
+    setText("[data-follower-goal]", goal.toLocaleString("de-DE"));
+    setText("[data-follower-rest]", String(goal - followers));
+    setText("[data-follower-percent]", `${Math.round(percent)} %`);
+  }
 
   function initLiveStatus() {
-    const text = $("#liveText");
-    const dot = $("#liveDot");
-    if (!text || !dot) return;
+    // Erst der Stand aus dem Build – die Seite steht also nie leer da.
+    paintLive();
 
-    const badge = dot.closest(".badge");
-    const hudStatus = $("#hudStatus");
-    const hudMeta = $("#hudStatusMeta");
+    let timer = 0;
+    let warned = false;
 
-    if (CONFIG.isLive) {
-      text.textContent = CONFIG.liveText;
-      dot.classList.add("is-live");
-      badge?.classList.add("is-live");
-      if (hudStatus) hudStatus.textContent = "LIVE";
-      if (hudMeta) hudMeta.textContent = "Jetzt zuschauen";
-    } else {
-      text.textContent = CONFIG.offlineText;
-      if (hudStatus) hudStatus.textContent = "Offline";
-      if (hudMeta) hudMeta.textContent = "Ich melde mich";
-    }
+    /** Fragt einen Wert an – mit einer zweiten Chance und etwas Abstand. */
+    const read = async (path, fallback = "") => {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          return await twitchCall(path);
+        } catch {
+          if (attempt === 0) await new Promise((done) => setTimeout(done, 500));
+        }
+      }
+      return fallback;
+    };
+
+    const sync = async () => {
+      // Nacheinander statt fünf parallel: DecAPI mag keine Bursts.
+      const uptime = await read("uptime");
+      if (!uptime) {
+        if (!warned) {
+          warned = true;
+          console.warn("[LiveJSON] Live-Status gerade nicht abrufbar – der letzte Stand bleibt stehen.");
+        }
+        return;
+      }
+
+      state.live = !/\boffline\b/i.test(uptime);
+      state.uptime = state.live
+        ? uptime.replace(/^.*?live for\s*/i, "").replace(/\s*$/g, "")
+        : "";
+
+      if (state.live) {
+        state.game = await read("game");
+        state.title = await read("title");
+        const viewers = await read("viewercount");
+        const nv = Number(String(viewers).replace(/\D/g, ""));
+        state.viewers = Number.isFinite(nv) && nv > 0 ? nv : null;
+      } else {
+        state.game = "";
+        state.title = "";
+        state.viewers = null;
+      }
+
+      const followers = await read("followcount");
+      if (/^\d+$/.test(followers)) state.followers = Number(followers);
+
+      state.loaded = true;
+      paintLive();
+    };
+
+    const start = () => { clearInterval(timer); timer = setInterval(sync, TWITCH.interval); };
+
+    sync();
+    start();
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        clearInterval(timer);
+        timer = 0;
+      } else {
+        sync();
+        start();
+      }
+    });
+  }
+
+  /* ---------- 3b. Zahlen aus dem Build-Snapshot -------------------------- */
+
+  function initStats() {
+    const stats = LJ.stats || {};
+    setText("[data-stat-streams]", stats.streams ? stats.streams.toLocaleString("de-DE") : "—");
+    setText("[data-stat-hours]", stats.hours ? stats.hours.toLocaleString("de-DE") : "—");
+    setText("[data-stat-avg]", stats.avgViewers ? String(stats.avgViewers) : "—");
+    setText("[data-stat-peak]", stats.peakViewers ? String(stats.peakViewers) : "—");
+    setText("[data-stat-first]", de(stats.firstStream));
+    setText("[data-stat-last]", de(stats.lastStream));
+    setText("[data-stat-since]", de(CHANNEL.createdAt));
+    setText("[data-snapshot]", de(LJ.updated));
+
+    const years = stats.firstStream ? new Date().getFullYear() - Number(stats.firstStream.slice(0, 4)) : 0;
+    setText("[data-stat-years]", years > 0 ? String(years) : "1");
+  }
+
+  /* ---------- 3c. Stream-Log (letzte echten Streams) --------------------- */
+
+  function initStreamLog() {
+    const host = $("[data-stream-log]");
+    if (!host || !Array.isArray(LJ.streams) || !LJ.streams.length) return;
+
+    const rows = LJ.streams.slice().reverse().slice(0, 12);
+    const frag = document.createDocumentFragment();
+
+    rows.forEach((s) => {
+      const hours = Math.floor(s.minutes / 60);
+      const minutes = s.minutes % 60;
+      const li = document.createElement("li");
+      li.className = "logrow";
+      li.innerHTML = `
+        <span class="logrow__date">${de(s.date.slice(0, 10))}</span>
+        <span class="logrow__len">${hours}h ${pad(minutes)}m</span>
+        <span class="logrow__views">Ø ${s.avg} · max ${s.max}</span>
+        <span class="logrow__title"></span>`;
+      li.querySelector(".logrow__title").textContent = s.title || "Stream";
+      frag.appendChild(li);
+    });
+
+    host.textContent = "";
+    host.appendChild(frag);
   }
 
   /* ---------- 4. Typewriter --------------------------------------------- */
@@ -429,7 +677,7 @@
 
     // Cursor reagiert auf klickbare Elemente
     document.addEventListener("pointerover", (e) => {
-      const hot = e.target.closest("a, button, .card, .social, .day, .clip");
+      const hot = e.target.closest("a, button, .card, .social, .day, .clip, .clipcard, [data-clip]");
       document.body.classList.toggle("cursor-hot", Boolean(hot));
     });
 
@@ -652,8 +900,8 @@
     const meta = $("#countdownMeta");
     if (!value) return;
 
-    // Streamplan aus dem DOM lesen – eine Quelle für Anzeige und Countdown.
-    const plan = $$(".day")
+    // Erst im DOM nachsehen (Streamplan-Seite), sonst den zentralen Plan nehmen.
+    const fromDom = $$(".day")
       .map((el) => {
         const timeEl = $(".day__time", el);
         const gameEl = $(".day__game", el);
@@ -668,6 +916,13 @@
         };
       })
       .filter(Boolean);
+
+    const plan = fromDom.length
+      ? fromDom
+      : CONFIG.plan.map((slot) => {
+          const [hours, minutes] = slot.time.split(":").map(Number);
+          return { day: slot.day, hours, minutes, game: slot.label };
+        });
 
     if (!plan.length) return;
 
@@ -698,6 +953,13 @@
     }
 
     function render() {
+      // Läuft gerade ein Stream? Dann ist der Countdown die Sendezeit.
+      if (state.live) {
+        value.textContent = state.uptime || "LIVE";
+        if (meta) meta.textContent = "läuft jetzt · " + (state.game || state.title || "Stream");
+        return;
+      }
+
       if (!target) {
         const next = nextDate();
         if (!next) {
@@ -748,7 +1010,7 @@
     const section = reel.closest("section");
     const prev = section ? $("[data-reel-prev]", section) : null;
     const next = section ? $("[data-reel-next]", section) : null;
-    const clips = $$(".clip", reel);
+    const clips = $$(".clip, .clipcard", reel);
 
     const step = () => {
       const first = clips[0];
@@ -818,6 +1080,109 @@
         e.preventDefault();
         reel.scrollBy({ left: -step(), behavior: "smooth" });
       }
+    });
+  }
+
+  /* ---------- 18c. Clips sortieren --------------------------------------- */
+
+  function initClipFilter() {
+    const bar = $("[data-clip-filter]");
+    const grid = $("[data-clip-grid]");
+    if (!bar || !grid) return;
+
+    const cards = $$(".clipcard", grid);
+    if (!cards.length) return;
+
+    const buttons = $$(".filterbar__btn", bar);
+
+    const apply = (mode) => {
+      const sorted = cards.slice().sort((a, b) => {
+        const aBtn = $("[data-clip]", a);
+        const bBtn = $("[data-clip]", b);
+        if (!aBtn || !bBtn) return 0;
+        if (mode === "new") return (bBtn.dataset.date || "").localeCompare(aBtn.dataset.date || "");
+        if (mode === "short") return Number(aBtn.dataset.seconds) - Number(bBtn.dataset.seconds);
+        return Number(bBtn.dataset.views) - Number(aBtn.dataset.views);
+      });
+
+      const frag = document.createDocumentFragment();
+      sorted.forEach((card) => frag.appendChild(card));
+      grid.appendChild(frag);
+    };
+
+    const target = $("[data-clip-count]");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        buttons.forEach((b) => {
+          b.classList.toggle("is-on", b === btn);
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+        apply(btn.dataset.sort);
+        if (target) target.textContent = String(cards.length);
+      });
+    });
+  }
+
+  /* ---------- 18b. Clip-Player (echte Twitch-Clips) ---------------------- */
+
+  function initClipPlayer() {
+    const root = $("#player");
+    const frame = $("#playerFrame");
+    if (!root || !frame) return;
+
+    const titleEl = $("#playerTitle");
+    const metaEl = $("#playerMeta");
+    const external = $("#playerExternal");
+    let lastFocus = null;
+
+    const close = () => {
+      if (root.hidden) return;
+      root.hidden = true;
+      frame.textContent = ""; // beendet die Wiedergabe wirklich
+      document.body.classList.remove("player-open");
+      lastFocus?.focus?.();
+    };
+
+    const open = (trigger) => {
+      const slug = trigger.dataset.clip;
+      if (!slug) return;
+
+      lastFocus = trigger;
+      const parent = location.hostname || "localhost";
+      const url = `https://clips.twitch.tv/embed?clip=${encodeURIComponent(slug)}&parent=${encodeURIComponent(parent)}&autoplay=true`;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = url;
+      iframe.title = trigger.dataset.title || "Twitch-Clip";
+      iframe.setAttribute("allow", "autoplay; fullscreen; encrypted-media");
+      iframe.setAttribute("scrolling", "no");
+      iframe.setAttribute("frameborder", "0");
+      frame.textContent = "";
+      frame.appendChild(iframe);
+
+      if (titleEl) titleEl.textContent = trigger.dataset.title || "Twitch-Clip";
+      if (metaEl) metaEl.textContent = [trigger.dataset.game, trigger.dataset.len, trigger.dataset.views ? `${trigger.dataset.views} Aufrufe` : ""]
+        .filter(Boolean).join(" · ");
+      if (external) external.href = `https://clips.twitch.tv/${slug}`;
+
+      root.hidden = false;
+      document.body.classList.add("player-open");
+      $(".player__close", root)?.focus?.();
+    };
+
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest("[data-clip]");
+      if (trigger) {
+        e.preventDefault();
+        open(trigger);
+        return;
+      }
+      if (e.target.closest("[data-player-close]")) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
     });
   }
 
@@ -904,13 +1269,6 @@
       lastFocus?.focus?.();
     };
 
-    const goto = (href) => {
-      close();
-      const el = $(href);
-      if (el) el.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: "start" });
-      else location.hash = href;
-    };
-
     const copyLink = async () => {
       const url = location.href;
       try {
@@ -931,15 +1289,34 @@
       close();
     };
 
+    /** Seite öffnen – oder, wenn das Ziel schon offen ist, sanft nach oben scrollen. */
+    const visit = (href) => {
+      const [file, hash] = href.split("#");
+      const here = location.pathname.split("/").pop() || "index.html";
+      const same = !file || file === here || (here === "" && file === "index.html");
+
+      if (same && hash) {
+        close();
+        $(`#${hash}`)?.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: "start" });
+        return;
+      }
+      if (same && !hash) {
+        close();
+        window.scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+        return;
+      }
+      location.href = href;
+    };
+
     const items = [
-      { label: "Über mich", icon: "01", hint: "Wer ist Jason?", action: () => goto("#about") },
-      { label: "Highlights", icon: "02", hint: "Beste Momente", action: () => goto("#highlights") },
-      { label: "Socials", icon: "03", hint: "Twitch, Discord & Co.", action: () => goto("#socials") },
-      { label: "Story", icon: "04", hint: "Der Weg bis hierher", action: () => goto("#story") },
-      { label: "Streamplan", icon: "05", hint: "Wann bin ich live?", action: () => goto("#schedule") },
-      { label: "Community", icon: "06", hint: "Discord & Regeln", action: () => goto("#community") },
-      { label: "Setup", icon: "07", hint: "Hardware & Gear", action: () => goto("#setup") },
-      { label: "Nach oben", icon: "↑", hint: "Zum Anfang", action: () => goto("#top") },
+      { label: "Start", icon: "00", hint: "Zur Startseite", action: () => visit("index.html") },
+      { label: "Über mich", icon: "01", hint: "Wer ist Jason?", action: () => visit("about.html") },
+      { label: "Socials", icon: "02", hint: "Twitch, YouTube & Co.", action: () => visit("socials.html") },
+      { label: "Clips", icon: "03", hint: "Echte Highlights", action: () => visit("clips.html") },
+      { label: "Streamplan", icon: "04", hint: "Wann bin ich live?", action: () => visit("streamplan.html") },
+      { label: "Community", icon: "05", hint: "Discord & die Zahlen", action: () => visit("community.html") },
+      { label: () => `Follower: ${state.followers.toLocaleString("de-DE")}`, icon: "♡", hint: "Live von Twitch", action: () => visit("community.html") },
+      { label: "Twitch öffnen", icon: "↗", hint: "twitch.tv/livejson", action: () => window.open(TWITCH.page, "_blank", "noopener") },
       { label: "Link kopieren", icon: "⧉", hint: "Seite teilen", action: copyLink },
       { label: "Party-Modus", icon: "✦", hint: "Konfetti, einmalig", action: () => { close(); party(); } },
     ];
@@ -972,7 +1349,8 @@
 
       const shown = items.filter((item) => {
         if (!q) return true;
-        return `${item.label} ${item.hint}`.toLowerCase().includes(q);
+        const label = typeof item.label === "function" ? item.label() : item.label;
+        return `${label} ${item.hint}`.toLowerCase().includes(q);
       });
 
       if (!shown.length) {
@@ -994,10 +1372,10 @@
 
         const icon = document.createElement("span");
         icon.className = "palette__item--icon";
-        icon.textContent = item.icon;
+        icon.textContent = typeof item.icon === "function" ? item.icon() : item.icon;
 
         const label = document.createElement("span");
-        label.textContent = item.label;
+        label.textContent = typeof item.label === "function" ? item.label() : item.label;
 
         const hint = document.createElement("span");
         hint.className = "palette__item-hint";
@@ -1104,9 +1482,13 @@
     run("cursor", initCursor);
     run("heroEffects", initHeroEffects);
     run("scroll", initScroll);
+    run("stats", initStats);
+    run("streamLog", initStreamLog);
     run("today", initToday);
     run("countdown", initCountdown);
     run("reel", initReel);
+    run("clipFilter", initClipFilter);
+    run("clipPlayer", initClipPlayer);
     run("palette", initPalette);
     run("easterEgg", initEasterEgg);
   }
